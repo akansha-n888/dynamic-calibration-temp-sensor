@@ -1,0 +1,77 @@
+#include <PID_v1.h>
+
+//PID parameters
+double Kp = 1, Ki = 0.005, Kd = 0;          
+double Input, Output, SetPoint;
+PID PID_control(&Input, &Output, &SetPoint, Kp, Ki, Kd, DIRECT);
+
+//Thermistor Parameters
+int ThermistorPin = 0;
+int Vo;
+float R1 = 10000;
+float logR2, R2, T, Tc;
+float c1 = 1.009249522e-03, c2 = 2.378405444e-04, c3 = 2.019202697e-07;
+
+//dc motor andd fan
+#define ENABLE 5
+#define DIRA 3
+#define DIRB 4
+
+void setup() {
+  Serial.begin(56000);
+  pinMode(ENABLE, OUTPUT);
+  pinMode(DIRA, OUTPUT);
+  pinMode(DIRB, OUTPUT);
+  PID_control.SetMode(AUTOMATIC);
+  PID_control.SetTunings(Kp, Ki, Kd);
+  PID_control.SetOutputLimits(-255, 255);         //pwm limits
+  SetPoint = 25;                                  //based off system readings (midpoint)
+}
+
+void loop() {
+  //converting resitance to temp reading
+  Vo = analogRead(ThermistorPin);
+  R2 = R1 * (1023.0 / (float)Vo - 1.0);
+  logR2 = log(R2);
+  T = (1.0 / (c1 + c2 * logR2 + c3 * logR2 * logR2 * logR2));
+  Tc = T - 273.15;
+
+  Input = Tc;
+  PID_control.Compute();            //solves for output
+
+  //set condition for dc motor to operate
+  if (Tc >= SetPoint) {
+    double fanspeed;
+    fanspeed = map(abs(Output), 0, 6, 0, 255);
+    Serial.print("Speed:");
+    Serial.print(fanspeed);
+    Serial.print("\t");
+    delay(10);
+    digitalWrite(ENABLE, HIGH); 
+    digitalWrite(DIRB, LOW);
+    digitalWrite(DIRA, HIGH);
+    digitalWrite(ENABLE, fanspeed); 
+  }
+  else {
+    digitalWrite(ENABLE, HIGH); 
+    digitalWrite(DIRB, LOW);
+    digitalWrite(DIRA, HIGH);
+    digitalWrite(ENABLE, 0); 
+  }
+
+ //print on serial monitor need input for response graphs
+  Serial.print("Input:");
+  Serial.print(Input);
+  Serial.print("\t");
+  delay(10);
+
+  Serial.print("Output:");
+  Serial.print(Output);
+  Serial.print("\t");
+  delay(10);
+
+  Serial.print("SetPoint:");
+  Serial.println(SetPoint);
+  Serial.print("\t");
+  delay(10);
+}
