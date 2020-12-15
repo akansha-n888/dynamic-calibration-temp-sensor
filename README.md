@@ -1,5 +1,5 @@
 # dynamic-calibration-temp-sensor
-> The program dynamically calibrates a thermistor that responds to the effects of a light source. The setpoint is set to 25 degrees. If the temperature of the thermistor (temperature sensor) exceeds the setpoint, the DC motor rotate. The rotating DC motor cools down the thermistor to drop the temperature reading to a threshold equal to or less than the setpoint. 
+> The program dynamically calibrates a thermistor that responds to the effects of a light source. The setpoint is set to 25 degrees. If the temperature of the thermistor (temperature sensor) exceeds the setpoint, the DC motor rotates. The rotating DC motor cools down the thermistor to drop the temperature reading to a threshold equal to or less than the setpoint. 
 
 ## Table of contents
 * [General info](#general-info)
